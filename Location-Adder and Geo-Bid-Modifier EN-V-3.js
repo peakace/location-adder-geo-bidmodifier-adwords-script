@@ -32,6 +32,9 @@ var REPORTING_URL = 'https://docs.google.com/spreadsheets/Ihre_Reporting_URl';
 //This is the minimum amount of clicks (within the time frame) the locations must have in order to be considered for bidding
 var MIN_CLICKS = 1;
 
+//This is the minimum amount of conversions (within the time frame) the locations must have in order to be considered for bidding
+MIN_CONVERSIONS = 2;
+
 //This is the minimum amount of impressions (within the time frame) the locations must have in order to be considered for bidding
 var MIN_IMPRESSIONS = 1;
 
@@ -148,7 +151,7 @@ function addNewLocationsWithBidModifier( campaign, locations, reportingBook ){
     "FROM   GEO_PERFORMANCE_REPORT " +
     "WHERE  Clicks >= " + MIN_CLICKS + " " +
     "AND CampaignId IN [" + campaign.getId() + "] " + 
-    "AND Conversions > 1 " +
+    "AND Conversions >= " + MIN_CONVERSIONS + " " +
       "AND Impressions >= " + MIN_IMPRESSIONS + " " +
         "DURING " + DATE );
   
@@ -157,7 +160,7 @@ function addNewLocationsWithBidModifier( campaign, locations, reportingBook ){
   clicksMap = {};
   conversionsMap = {};
   cityMap = {};  
-  while (rows.hasNext()) {
+  while( rows.hasNext() ){
     var row = rows.next();
     var location = row["CountryCriteriaId"];
     var city = row["CityCriteriaId"];
@@ -171,7 +174,7 @@ function addNewLocationsWithBidModifier( campaign, locations, reportingBook ){
     
     cityMap[ id ] = city + "," + region + "," + location;
   
-    clicksMap[id] = clicksMap[id] ? clicksMap[id] : 0;
+    clicksMap[ id ] = clicksMap[ id ] ? clicksMap[ id ] : 0;
     conversionsMap[ id ] = conversionsMap[ id ] ? conversionsMap[ id ] : 0;
     
     clicksMap       [ id ] = clicksMap[ id ] + row["Clicks"];
@@ -233,9 +236,9 @@ function addNewLocationsWithBidModifier( campaign, locations, reportingBook ){
 function updateBidModifierForexistingLocations( reportingBook ){
   
   var campaignIterator = AdWordsApp.campaigns()
-  .withCondition("Status = 'ENABLED'")
-  .withCondition("Conversions > 0")
-  .withCondition("Clicks > " + MIN_CLICKS)
+  .withCondition( "Status = 'ENABLED'" )
+  .withCondition( "Conversions >= " + MIN_CONVERSIONS )
+  .withCondition( "Clicks > " + MIN_CLICKS )
   .forDateRange(DATE)
   .get();
   
