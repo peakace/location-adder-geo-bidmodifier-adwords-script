@@ -16,7 +16,7 @@
     4. Create a reporting sheet
         1. In Google Drive, create a new and empty Google spreadsheet
         2. Copy the URL and paste it into REPORTING_URL
-    5. For MIN_CLICKS, MIN_IMPRESSIONS, and MIN_COST, specify the minimum data for the locations.
+    5. For MIN_CONVERSIONS, MIN_CLICKS, MIN_IMPRESSIONS, and MIN_COST, specify the minimum data for the locations.
     6. Specify the minimum and maximum bid the script may set. The minimum bid is 0.1 and the maximum bid is 10 (0.1 = -90%, 0.2 = -80%, 1= 0%, 2 = 100% and so on).
     7. Exclude the campaigns that the script should not edit. Each campaign must be separated by commas.
     8. Specify the minimum number of clicks a new campaign must have, in order for bidding to commence.
