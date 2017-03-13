@@ -151,7 +151,7 @@ function addNewLocationsWithBidModifier( campaign, locations, reportingBook ){
     "FROM   GEO_PERFORMANCE_REPORT " +
     "WHERE  Clicks >= " + MIN_CLICKS + " " +
     "AND CampaignId IN [" + campaign.getId() + "] " + 
-    "AND Conversions >= " + MIN_CONVERSIONS + " " +
+    "AND Conversions > " + ( MIN_CONVERSIONS - 1 ) + " " +
       "AND Impressions >= " + MIN_IMPRESSIONS + " " +
         "DURING " + DATE );
   
