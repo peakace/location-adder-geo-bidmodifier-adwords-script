@@ -1,4 +1,4 @@
-"Peak Ace location-adder-geo-bidmodifier-adwords-script" 
+Peak Ace Location Adder Geo Bidmodifier Adwords Script
 
 1. Go to your AdWords account: bulk operations and scripts
 2. Click on: + Script to add a script
