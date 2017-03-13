@@ -12,6 +12,7 @@ Peak Ace Location Adder Geo Bidmodifier Adwords Script
         4.2.4. Copy the URL and paste it into LOCATIONS_URL
     4.3. For LOCATIONS_SHEET_NAME, specify the name of the sheet (See section 4.2.3.)
     4.4. Create a reporting sheet
+      
 4.4.1. In Google Drive, create a new and empty Google spreadsheet
 4.4.2. Copy the URL and paste it into REPORTING_URL
 4.5. For MIN_CLICKS, MIN_IMPRESSIONS, and MIN_COST, specify the minimum data for the locations.
