@@ -2,32 +2,33 @@
  *
  * Location-Adder and Geo-Bid-Modifier
  *
- * This script searches for target locations (based on your filter settings) in your campaigns, adds those locations, and sets a bid modifier for them based on their conversion rates.
+ * This script searches for target locations (based on your filter settings) in your campaigns, adds those locations 
+ * and sets a bid modifier for them based on their conversion rates.
  * It also sets a bidding modifier for already existing locations. 
- * All changes the script makes will be reported in a spreadsheet on a weekly basis.
- * Created By: Alexander Tissen, Daniel Bartonitschek
- * Version: 1.0
+ * All changes made by the script will be reported in a report spreadsheet.
+ * Created By: Marcel Prothmann, Alexander Tissen, Daniel Bartonitschek
+ * Version: 1.2
  * www.pa.ag
  *
  */
  
 //Filter Settings:
-//This is the time frame that the script will check. Possible variations which can be used:
+//This is the data time frame that the script will use to calculate the modifiers. Possible variations which can be used:
 //TODAY, YESTERDAY, LAST_7_DAYS, THIS_WEEK_SUN_TODAY, LAST_WEEK, LAST_14_DAYS, LAST_30_DAYS, LAST_BUSINESS_WEEK, LAST_WEEK_SUN_SAT, THIS_MONTH, LAST_MONTH, ALL_TIME
 var DATE = "LAST_30_DAYS";
 
-//This is the URL of the spreadsheet containing all locations (and IDs) worldwide. You can download the locations here: https://developers.google.com/adwords/api/docs/appendix/geotargeting
-//This spreadsheet must be created by you.
-var LOCATIONS_URL = 'https://docs.google.com/spreadsheets/Ihre_Location_URL';
+// This is the URL of the spreadsheet containing all possible geo target locations (and IDs) worldwide. 
+// You can use our spreadsheet or just add your own location spreadsheet (e.g. https://docs.google.com/spreadsheets/Ihre_Location_URL). 
+// All the supported location can be downloaded here: https://developers.google.com/adwords/api/docs/appendix/geotargeting
+var LOCATIONS_URL = 'https://docs.google.com/spreadsheets/d/1-boBTeruZBAecNItuom5aMRqFqpYQ3zSUm3a5xKCg3E/';
 
-//This is the name of the spreadsheet containing the locations.
+//This is the name of the sheet with the spreadsheet containing the locations.
 var LOCATIONS_SHEET_NAME = 'locations';
 
-//This is the URL of the spreadsheet where you will see the daily changes the script makes.
-//This spreadsheet must also be created by you.
+//This is the URL of the spreadsheet where you will see the daily changes of the script.
+// Please just create a new empty spreadsheet and replace the URL here:
 var REPORTING_URL = 'https://docs.google.com/spreadsheets/Ihre_Reporting_URl';
 
-//Now we tell the script which locations to search for. (*hint: you should set it up with at least 1 click and 1 impression)
 //This is the minimum amount of clicks (within the time frame) the locations must have in order to be considered for bidding
 var MIN_CLICKS = 1;
 
@@ -38,7 +39,7 @@ var MIN_IMPRESSIONS = 1;
 var MIN_COST = 0;
 
 //These are the minimum and maximum possible bid-modifiers. You can set these between 0.1 and 10 ( 0.1 = -90% , 10 = +900% )
-var MAX_BID = 10
+var MAX_BID = 3
 var MIN_BID = 0.5
 
 //This is for campaigns which should not be checked. Please separate them with a comma.
@@ -46,8 +47,6 @@ var EXCLUDE_CAMPAIGNS = ["Campaign Example 1", "Campaign Example 2"];
 
 //This is the minimum of amount of clicks the new locations must have in order to be considered for bidding
 var MIN_LOCATION_CLICKS = 50;
-
-
 
 
 function findLastCell( sheet, column ){
