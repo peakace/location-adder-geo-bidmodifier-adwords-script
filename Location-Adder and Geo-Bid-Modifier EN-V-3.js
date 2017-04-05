@@ -12,9 +12,9 @@
  *
  */
  
-//Filter Settings:
-//This is the data time frame that the script will use to calculate the modifiers. Possible variations which can be used:
-//TODAY, YESTERDAY, LAST_7_DAYS, THIS_WEEK_SUN_TODAY, LAST_WEEK, LAST_14_DAYS, LAST_30_DAYS, LAST_BUSINESS_WEEK, LAST_WEEK_SUN_SAT, THIS_MONTH, LAST_MONTH, ALL_TIME
+// Filter Settings:
+// This is the data time frame that the script will use to calculate the modifiers. Possible variations which can be used:
+// TODAY, YESTERDAY, LAST_7_DAYS, THIS_WEEK_SUN_TODAY, LAST_WEEK, LAST_14_DAYS, LAST_30_DAYS, LAST_BUSINESS_WEEK, LAST_WEEK_SUN_SAT, THIS_MONTH, LAST_MONTH, ALL_TIME
 var DATE = "LAST_30_DAYS";
 
 // This is the URL of the spreadsheet containing all possible geo target locations (and IDs) worldwide. 
@@ -22,34 +22,40 @@ var DATE = "LAST_30_DAYS";
 // All the supported location can be downloaded here: https://developers.google.com/adwords/api/docs/appendix/geotargeting
 var LOCATIONS_URL = 'https://docs.google.com/spreadsheets/d/1-boBTeruZBAecNItuom5aMRqFqpYQ3zSUm3a5xKCg3E/';
 
-//This is the name of the sheet with the spreadsheet containing the locations.
+// This is the name of the sheet with the spreadsheet containing the locations.
 var LOCATIONS_SHEET_NAME = 'locations';
 
-//This is the URL of the spreadsheet where you will see the daily changes of the script.
+// This is the URL of the spreadsheet where you will see the daily changes of the script.
 // Please just create a new empty spreadsheet and replace the URL here:
 var REPORTING_URL = 'https://docs.google.com/spreadsheets/Ihre_Reporting_URl';
 
-//This is the minimum amount of clicks (within the time frame) the locations must have in order to be considered for bidding
+// This is the minimum amount of clicks (within the time frame) the locations must have in order to be considered for bidding
 var MIN_CLICKS = 1;
 
-//This is the minimum amount of conversions (within the time frame) the locations must have in order to be considered for bidding
+// This is the minimum amount of conversions (within the time frame) the locations must have in order to be considered for bidding
 MIN_CONVERSIONS = 2;
 
-//This is the minimum amount of impressions (within the time frame) the locations must have in order to be considered for bidding
+// This is the minimum amount of impressions (within the time frame) the locations must have in order to be considered for bidding
 var MIN_IMPRESSIONS = 1;
 
-//This is the minimum amount of costs (within the time frame) the locations must have in order to be considered for bidding
+// This is the minimum amount of costs (within the time frame) the locations must have in order to be considered for bidding
 var MIN_COST = 0;
 
-//These are the minimum and maximum possible bid-modifiers. You can set these between 0.1 and 10 ( 0.1 = -90% , 10 = +900% )
+// These are the minimum and maximum possible bid-modifiers. You can set these between 0.1 and 10 ( 0.1 = -90% , 10 = +900% )
 var MAX_BID = 3
 var MIN_BID = 0.5
 
-//This is for campaigns which should not be checked. Please separate them with a comma.
-var EXCLUDE_CAMPAIGNS = ["Campaign Example 1", "Campaign Example 2"];
+// This is for campaigns which should not be checked. Please separate them with a comma.
+var EXCLUDE_CAMPAIGNS = [ "Campaign Example 1", "Campaign Example 2" ];
 
-//This is the minimum of amount of clicks the new locations must have in order to be considered for bidding
+// Exclude campaigns which contain these terms in their name. Please separate them with a comma.
+var EXCLUDE_CAMPAIGNS_WHICH_CONTAIN = [ "Shopping", "Brand" ];
+
+// This is the minimum of amount of clicks the existing location must have in order to be considered for bidding
 var MIN_LOCATION_CLICKS = 50;
+
+// This is the minimum of amount of conversions the existing location must have in order to be considered for bidding
+var MIN_LOCATION_CONVERSIONS = 1;
 
 
 function findLastCell( sheet, column ){
@@ -100,6 +106,20 @@ function getSheet( workBook, campaignName ){
   return sheet;
 }
 
+
+function excludeCampaignsWithNameContains( selector ){
+	EXCLUDE_CAMPAIGNS_WHICH_CONTAIN.forEach(
+		function( word ){
+			// If we try to exclued an empty string "" then we get an error "One of the conditions in the query is invalid."
+			// To avoid this, we dont exclude empty strings
+			if( word != undefined && word.length > 0 ){
+				selector = selector.withCondition( "Name DOES_NOT_CONTAIN " + word );
+			}
+		}
+	);
+	return selector;
+}
+
 function main(){
   var reportingBook = SpreadsheetApp.openByUrl(REPORTING_URL);
   
@@ -123,13 +143,10 @@ function main(){
  
   
 	// add new targeted locations to all campaigns
-	var campaignIterator = AdWordsApp.campaigns()
-		.withCondition("Status = 'ENABLED'")
-		.get(); 
+	var campaignIterator = excludeCampaignsWithNameContains( AdWordsApp.campaigns().withCondition( "Status = 'ENABLED'" ) ).get();
+		
 	// add new targeted locations to all shopping campaigns
-	var shoppingCampaignIterator = AdWordsApp.shoppingCampaigns()
-		.withCondition("Status = 'ENABLED'")
-		.get();
+	var shoppingCampaignIterator = excludeCampaignsWithNameContains( AdWordsApp.shoppingCampaigns().withCondition("Status = 'ENABLED'") ).get();
 	
 	var combinedIterator = combineIterators( campaignIterator, shoppingCampaignIterator );
 	
@@ -137,7 +154,7 @@ function main(){
 		var campaign = combinedIterator.next();
     
 		if( EXCLUDE_CAMPAIGNS.indexOf( campaign.getName() ) >= 0 ){
-		continue;
+			continue;
 		}
 		addNewLocationsWithBidModifier( campaign, locations, reportingBook );
   }
@@ -254,19 +271,17 @@ function addNewLocationsWithBidModifier( campaign, locations, reportingBook ){
 
 function updateBidModifierForexistingLocations( reportingBook ){
   
-  var campaignIterator = AdWordsApp.campaigns()
-  .withCondition( "Status = 'ENABLED'" )
-  .withCondition( "Conversions >= " + MIN_CONVERSIONS )
-  .withCondition( "Clicks > " + MIN_CLICKS )
-  .forDateRange(DATE)
-  .get();
-  
-	var shoppingCampaignIterator = AdWordsApp.shoppingCampaigns()
-	.withCondition( "Status = 'ENABLED'" )
-	.withCondition( "Conversions >= " + MIN_CONVERSIONS )
-	.withCondition( "Clicks > " + MIN_CLICKS )
-	.forDateRange(DATE)
-		.get();
+	var campaignIterator = excludeCampaignsWithNameContains(
+		AdWordsApp.campaigns()
+		.withCondition( "Status = 'ENABLED'" )
+		.forDateRange( DATE ) 
+	).get();
+		
+	var shoppingCampaignIterator = excludeCampaignsWithNameContains(
+		AdWordsApp.shoppingCampaigns()
+		.withCondition( "Status = 'ENABLED'" )
+		.forDateRange(DATE)
+	).get();
 	
 	var combinedIterator = combineIterators( campaignIterator, shoppingCampaignIterator );
 	
@@ -287,6 +302,10 @@ function updateBidModifierForexistingLocations( reportingBook ){
 			var stats = targetedLocation.getStatsFor( DATE );
 			var locationClicks = stats.getClicks();
 				if( locationClicks < MIN_LOCATION_CLICKS ){
+				continue;
+			}
+			var locationConversions = stats.getConversions();
+				if( locationConversions < MIN_LOCATION_CONVERSIONS ){
 				continue;
 			}
 				
@@ -345,5 +364,4 @@ function getLocations(){
   }
   
   return map;
-	// test
 }
