@@ -122,24 +122,43 @@ function main(){
   var locations = getLocations();
  
   
-  // add new targeted locations to all campaigns
- var campaignIterator = AdWordsApp.campaigns()
-	.withCondition("Status = 'ENABLED'")
-	.get(); 
- while( campaignIterator.hasNext() ){
-    var campaign = campaignIterator.next();
+	// add new targeted locations to all campaigns
+	var campaignIterator = AdWordsApp.campaigns()
+		.withCondition("Status = 'ENABLED'")
+		.get(); 
+	// add new targeted locations to all shopping campaigns
+	var shoppingCampaignIterator = AdWordsApp.shoppingCampaigns()
+		.withCondition("Status = 'ENABLED'")
+		.get();
+	
+	var combinedIterator = combineIterators( campaignIterator, shoppingCampaignIterator );
+	
+	while( combinedIterator.hasNext() ){
+		var campaign = combinedIterator.next();
     
-    if( EXCLUDE_CAMPAIGNS.indexOf(campaign.getName()) >= 0 ){
-      continue;
-    }
-    
-    addNewLocationsWithBidModifier( campaign, locations, reportingBook );
+		if( EXCLUDE_CAMPAIGNS.indexOf( campaign.getName() ) >= 0 ){
+		continue;
+		}
+		addNewLocationsWithBidModifier( campaign, locations, reportingBook );
   }
   
   // update bids for existing targeted locations
   Logger.log("und jetzt die getargeteten Locations");
   updateBidModifierForexistingLocations( reportingBook );
 }
+
+function combineIterators( iterator1, iterator2 ){
+	return {
+		hasNext : function(){ return iterator1.hasNext() || iterator2.hasNext() },
+		next : function(){
+			if( iterator1.hasNext() ){
+				return iterator1.next();
+			}
+			return iterator2.next();
+		}
+	};
+}
+
 
 
 
@@ -191,7 +210,7 @@ function addNewLocationsWithBidModifier( campaign, locations, reportingBook ){
     var conversionrate = conversions / clicks * 100;
        
     var campaincvr = campaign.getStatsFor( DATE ).getConversionRate(); 
-    var bid_modifier = ( conversionrate / campaincvr) / 100;
+    var bid_modifier = ( conversionrate / campaincvr ) / 100;
     
     
     
@@ -242,8 +261,20 @@ function updateBidModifierForexistingLocations( reportingBook ){
   .forDateRange(DATE)
   .get();
   
-	while( campaignIterator.hasNext() ){
-		var campaign = campaignIterator.next();	
+	var shoppingCampaignIterator = AdWordsApp.shoppingCampaigns()
+	.withCondition( "Status = 'ENABLED'" )
+	.withCondition( "Conversions >= " + MIN_CONVERSIONS )
+	.withCondition( "Clicks > " + MIN_CLICKS )
+	.forDateRange(DATE)
+		.get();
+	
+	var combinedIterator = combineIterators( campaignIterator, shoppingCampaignIterator );
+	
+
+
+  
+	while( combinedIterator.hasNext() ){
+		var campaign = combinedIterator.next();	
 		if( EXCLUDE_CAMPAIGNS.indexOf(campaign.getName()) >= 0 ){
 		  continue;
 		}
