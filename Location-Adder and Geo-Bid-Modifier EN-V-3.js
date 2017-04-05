@@ -1,4 +1,4 @@
-/*
+/* 
  *
  * Location-Adder and Geo-Bid-Modifier
  *
@@ -314,4 +314,5 @@ function getLocations(){
   }
   
   return map;
+	// test
 }
