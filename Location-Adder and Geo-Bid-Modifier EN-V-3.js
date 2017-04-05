@@ -177,8 +177,8 @@ function addNewLocationsWithBidModifier( campaign, locations, reportingBook ){
     clicksMap[ id ] = clicksMap[ id ] ? clicksMap[ id ] : 0;
     conversionsMap[ id ] = conversionsMap[ id ] ? conversionsMap[ id ] : 0;
     
-    clicksMap       [ id ] = clicksMap[ id ] + row["Clicks"];
-    conversionsMap[ id ] = conversionsMap[ id ] + row["Conversions"];
+    clicksMap       [ id ] = parseInt( clicksMap[ id ] ) + parseInt( row["Clicks"] );
+    conversionsMap[ id ] = parseFloat( conversionsMap[ id ] ) + parseFloat( row["Conversions"] );
     
   }
   
@@ -186,12 +186,12 @@ function addNewLocationsWithBidModifier( campaign, locations, reportingBook ){
   
   
   loop :  for( var id in clicksMap ){
-    var clicks = clicksMap[id];
-    var conversions = conversionsMap[id];
+    var clicks = clicksMap[ id ];
+    var conversions = conversionsMap[ id ];
     var conversionrate = conversions / clicks * 100;
        
     var campaincvr = campaign.getStatsFor( DATE ).getConversionRate(); 
-    var bid_modifier = (conversionrate / campaincvr) / 100;
+    var bid_modifier = ( conversionrate / campaincvr) / 100;
     
     
     
@@ -226,7 +226,7 @@ function addNewLocationsWithBidModifier( campaign, locations, reportingBook ){
     reportingSheet.getRange(row, column).setValue( log );
     reportingSheet.autoResizeColumn(column);
     
-    Logger.log (city + "," + region + "," + location + ' (' + id + ') ' + "Klicks: " + clicks + " Conversions: " + conversions);
+    Logger.log (city + "," + region + "," + location + ' (' + id + ') ' + "Klicks: " + clicks + " Conversions: " + conversions );
   }
   
 }
